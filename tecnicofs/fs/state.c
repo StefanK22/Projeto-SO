@@ -6,6 +6,8 @@ IAED é bué fixe
 FISICA 2 AINDA MELHOR.
 NÃO DÁ 
 
+Vou alterar.
+abc
 for (i = 0; i < 10; i++){
 
 Ok também estou a escrever. Estamos a programar os dois.
