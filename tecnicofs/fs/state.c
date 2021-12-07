@@ -6,6 +6,9 @@ IAED é bué fixe
 FISICA 2 AINDA MELHOR.
 NÃO DÁ 
 
+
+// 7/12/2021
+
 Vou alterar.
 abcdddddd
 for (i = 0; i < 10; i++){
