@@ -27,6 +27,9 @@ int main() {
     r = tfs_read(f, buffer, sizeof(buffer) - 1);
     assert(r == strlen(str));
 
+    int i = tfs_copy_to_external_fs(path, "teste.txt");
+    assert(i == 0);
+
     buffer[r] = '\0';
     assert(strcmp(buffer, str) == 0);
 
