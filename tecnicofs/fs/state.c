@@ -109,9 +109,10 @@ int inode_create(inode_type n_type) {
                     freeinode_ts[inumber] = FREE;
                     return -1;
                 }
-
+            /* Mudar
                 inode_table[inumber].i_size = BLOCK_SIZE;
                 inode_table[inumber].i_data_block = b;
+            */
 
                 dir_entry_t *dir_entry = (dir_entry_t *)data_block_get(b);
                 if (dir_entry == NULL) {
