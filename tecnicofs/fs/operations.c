@@ -182,13 +182,19 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
 int tfs_copy_to_external_fs(char const *source_path, char const *dest_path){
 
 
-	char buffer[BLOCK_SIZE];
+	char buffer[128];
+	ssize_t bytes_read;
 	int fs = tfs_open(source_path, 0);
 	if (fs == -1) return -1;
-	if (tfs_read(fs, buffer, sizeof(buffer) - 1) == -1) return -1;
 	FILE *fd = fopen(dest_path, "w");
 	if (fd == NULL) return -1;
-	if (fwrite(buffer, 1, strlen(buffer), fd) != strlen(buffer)) return -1; 
+	do {
+		bytes_read = tfs_read(fs, buffer, sizeof(buffer));
+		if (bytes_read == -1){ 
+			// erro
+		}		
+		fwrite(buffer, 1, (size_t) bytes_read, fd);
+	} while (bytes_read == 128);
 
 	if (tfs_close(fs) == -1 || fclose(fd) == -1) return -1;
 
