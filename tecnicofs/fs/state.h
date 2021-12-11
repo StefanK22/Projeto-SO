@@ -1,6 +1,7 @@
 #ifndef STATE_H
 #define STATE_H
 
+
 #include "config.h"
 
 #include <stdio.h>
@@ -24,9 +25,8 @@ typedef struct {
     inode_type i_node_type;
     size_t i_size;
     int i_data_block;
-    int data_block_list[11];
-    int blocks_num;
-    int i_block;
+    int data_block_list[NUM_DIRECT_REF];
+    int ref_block;
     /* in a real FS, more fields would exist here */
 } inode_t;
 
@@ -41,6 +41,7 @@ typedef struct {
 } open_file_entry_t;
 
 #define MAX_DIR_ENTRIES (BLOCK_SIZE / sizeof(dir_entry_t))
+#define MAX_SUP_BLOCKS (BLOCK_SIZE / sizeof(int))
 
 void state_init();
 void state_destroy();
@@ -60,5 +61,7 @@ void *data_block_get(int block_number);
 int add_to_open_file_table(int inumber, size_t offset);
 int remove_from_open_file_table(int fhandle);
 open_file_entry_t *get_open_file_entry(int fhandle);
+
+int block_number_get(int block_index, inode_t inode);
 
 #endif // STATE_H

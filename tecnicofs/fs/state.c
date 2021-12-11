@@ -109,10 +109,9 @@ int inode_create(inode_type n_type) {
                     freeinode_ts[inumber] = FREE;
                     return -1;
                 }
-            /* Mudar
+            
                 inode_table[inumber].i_size = BLOCK_SIZE;
                 inode_table[inumber].i_data_block = b;
-            */
 
                 dir_entry_t *dir_entry = (dir_entry_t *)data_block_get(b);
                 if (dir_entry == NULL) {
@@ -126,7 +125,10 @@ int inode_create(inode_type n_type) {
             } else {
                 /* In case of a new file, simply sets its size to 0 */
                 inode_table[inumber].i_size = 0;
-                inode_table[inumber].i_data_block = -1;
+                for(size_t i = 0; i < NUM_DIRECT_REF; i++){
+                    inode_table[inumber].data_block_list[i] = -1;  
+                }
+                inode_table[inumber].ref_block = -1;
             }
             return inumber;
         }
@@ -152,9 +154,13 @@ int inode_delete(int inumber) {
     freeinode_ts[inumber] = FREE;
 
     if (inode_table[inumber].i_size > 0) {
-        if (data_block_free(inode_table[inumber].i_data_block) == -1) {
-            return -1;
+        for(size_t i = 0; i < NUM_DIRECT_REF; i++){
+            if (data_block_free(inode_table[inumber].data_block_list[i]) == -1) {
+                return -1;
+            }
         }
+        if (data_block_free(inode_table[inumber].ref_block) == -1) 
+            return -1;
     }
 
     /* TODO: handle non-empty directories (either return error, or recursively
@@ -340,4 +346,18 @@ open_file_entry_t *get_open_file_entry(int fhandle) {
         return NULL;
     }
     return &open_file_table[fhandle];
+}
+
+int block_number_get(int block_index, inode_t inode){
+    if (block_index < NUM_DIRECT_REF)
+        return inode.data_block_list[block_index];
+    else{
+        char block_number_char[4];
+        for (int i = 0; i < 4; i++){
+            block_number_char[i] = fs_data[inode.ref_block * BLOCK_SIZE + (block_index - NUM_DIRECT_REF) * 4 + i];
+        }
+        int block_number;
+        sscanf(block_number_char, "%d", &block_number);
+        return block_number;
+    }
 }
