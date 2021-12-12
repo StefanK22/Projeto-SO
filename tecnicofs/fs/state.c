@@ -353,9 +353,7 @@ int block_number_get(int block_index, inode_t inode){
         return inode.data_block_list[block_index];
     else{
         char block_number_char[4];
-        for (int i = 0; i < 4; i++){
-            block_number_char[i] = fs_data[inode.ref_block * BLOCK_SIZE + (block_index - NUM_DIRECT_REF) * 4 + i];
-        }
+        memcpy(block_number_char, fs_data[inode.ref_block * BLOCK_SIZE + (block_index - NUM_DIRECT_REF) * 4], 4);
         int block_number;
         sscanf(block_number_char, "%d", &block_number);
         return block_number;
