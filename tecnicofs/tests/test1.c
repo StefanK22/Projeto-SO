@@ -20,6 +20,8 @@ int main() {
     r = tfs_write(f, str, strlen(str));
     assert(r == strlen(str));
 
+    teste();
+
     assert(tfs_close(f) != -1);
 
     //f = tfs_open(path, 0);

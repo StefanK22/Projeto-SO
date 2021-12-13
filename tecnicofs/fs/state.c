@@ -348,30 +348,34 @@ open_file_entry_t *get_open_file_entry(int fhandle) {
     return &open_file_table[fhandle];
 }
 
-void* block_number_get(int block_index, inode_t inode){
-    if (inode.i_size / BLOCK_SIZE <= block_index){
-        if (block_index - (int) inode.i_size / BLOCK_SIZE > 1) return NULL; // diferença maior que 1
+void* block_number_get(int block_index, inode_t *inode){
+    if (inode->i_size / BLOCK_SIZE <= block_index){
+        if (block_index - (int) inode->i_size / BLOCK_SIZE > 1) return NULL; // diferença maior que 1
         int block = data_block_alloc();
         if (block_index < NUM_DIRECT_REF){
-            inode.data_block_list[block_index] = block;
+            inode->data_block_list[block_index] = block;
             return data_block_get(block);
         } 
         // If the block´s reference is in the reference block of the inode
         else {
             //  
-            fs_data[inode.ref_block * BLOCK_SIZE + (block_index - NUM_DIRECT_REF)] = (char) block;
+            fs_data[inode->ref_block * BLOCK_SIZE + (block_index - NUM_DIRECT_REF)] = (char) block;
             //data_block_get(block);
             return data_block_get(block);
         }
     }
     else {
         if (block_index < NUM_DIRECT_REF){
-            return data_block_get(inode.data_block_list[block_index]);
+            return data_block_get(inode->data_block_list[block_index]);
         }
         else {
-            int block = (int) fs_data[inode.ref_block * BLOCK_SIZE + (block_index - NUM_DIRECT_REF)];
+            int block = (int) fs_data[inode->ref_block * BLOCK_SIZE + (block_index - NUM_DIRECT_REF)];
             return data_block_get(block);
     }
 
     }
+
+}
+void teste(){
+    printf("%s\n", fs_data + 2048);
 }
