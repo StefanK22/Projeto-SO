@@ -62,6 +62,6 @@ int add_to_open_file_table(int inumber, size_t offset);
 int remove_from_open_file_table(int fhandle);
 open_file_entry_t *get_open_file_entry(int fhandle);
 
-int block_number_get(int block_index, inode_t inode);
+void* block_number_get(int block_index, inode_t inode);
 
 #endif // STATE_H

@@ -125,8 +125,8 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
 
 		size_t to_be_written = to_write;
 		if (file->of_offset == 0){
-			for (size_t i = 0; to_be_written != 0; i++){
-				void *block = data_block_get(block_number_get(i, *inode));
+			for (int i = 0; to_be_written != 0; i++){
+				void *block = block_number_get(i, *inode);
 				if (block == NULL) {
 					return -1;
 				}
@@ -136,15 +136,19 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
 				}
 				/* Perform the actual write */
 				else {
-					memcpy(block, buffer, BLOCK_SIZE);
+					memcpy(block, buffer + BLOCK_SIZE * i, BLOCK_SIZE);
 					to_be_written -= BLOCK_SIZE;
 				}
+				inode->i_size = to_write - to_be_written;
+				printf("%*s\n", (int) sizeof(buffer), (char*) block);
+				printf("\n");
 			}
+
 		}
 		else {
-			int block_index = file->of_offset / BLOCK_SIZE;
+			int block_index = (int) file->of_offset / BLOCK_SIZE;
 			size_t block_offset = file->of_offset % BLOCK_SIZE;
-			void *block = data_block_get(block_number_get(block_index, *inode));
+			void *block = block_number_get(block_index, *inode);
 			if (block_offset + to_be_written <= BLOCK_SIZE){
 				memcpy(block + block_offset, buffer, to_be_written);
 
@@ -152,8 +156,8 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
 			else{
 				memcpy(block + block_offset, buffer, BLOCK_SIZE - block_offset);
 				to_be_written -= BLOCK_SIZE - block_offset;
-				for (size_t i = block_index, j = 0; to_be_written != 0; i++){
-					void *block = data_block_get(block_number_get(i, *inode));
+				for (int i = block_index, j = 0; to_be_written != 0; i++){
+					block = block_number_get(i, *inode);
 					if (block == NULL) {
 						return -1;
 					}
