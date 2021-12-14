@@ -358,9 +358,9 @@ void* block_number_get(int block_index, inode_t *inode){
         } 
         // If the block´s reference is in the reference block of the inode
         else {
-            //  
-            fs_data[inode->ref_block * BLOCK_SIZE + (block_index - NUM_DIRECT_REF)] = (char) block;
-            //data_block_get(block);
+            //fs_data[inode->ref_block * BLOCK_SIZE + (block_index - NUM_DIRECT_REF)] = (char) block;
+            int *refs = data_block_get(inode->ref_block);
+            refs[block_index - NUM_DIRECT_REF] = block;
             return data_block_get(block);
         }
     }
@@ -369,12 +369,15 @@ void* block_number_get(int block_index, inode_t *inode){
             return data_block_get(inode->data_block_list[block_index]);
         }
         else {
-            int block = (int) fs_data[inode->ref_block * BLOCK_SIZE + (block_index - NUM_DIRECT_REF)];
+            //int block = (int) fs_data[inode->ref_block * BLOCK_SIZE + (block_index - NUM_DIRECT_REF)];
+            int *refs = data_block_get(inode->ref_block);
+            int block = refs[block_index - NUM_DIRECT_REF];
             return data_block_get(block);
     }
 
     }
-
+// int *refs = get_data_block()
+// refs[0] = ..., refs[1] = ...
 }
 void teste(){
     printf("%s\n", fs_data + 2048);

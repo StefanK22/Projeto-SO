@@ -145,11 +145,10 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
 		}
 		else {
 			int block_index = (int) file->of_offset / BLOCK_SIZE;
-			size_t block_offset = file->of_offset % BLOCK_SIZE;
+			size_t block_offset = file->of_offset % BLOCK_SIZE + 1;
 			void *block = block_number_get(block_index, inode);
 			if (block_offset + to_be_written <= BLOCK_SIZE){
 				memcpy(block + block_offset, buffer, to_be_written);
-
 			}
 			else{
 				memcpy(block + block_offset, buffer, BLOCK_SIZE - block_offset);
@@ -178,7 +177,7 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
 			inode->i_size = file->of_offset;
 		}
 	}
-
+	printf("%s\n", (char*) block_number_get(14, inode));
 	return (ssize_t)to_write;
 }
 
@@ -217,7 +216,6 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
 		 * incremented accordingly */
 		file->of_offset += to_read;
 	}
-
 	return (ssize_t)to_read;
 }
 
