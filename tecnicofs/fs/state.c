@@ -349,7 +349,7 @@ open_file_entry_t *get_open_file_entry(int fhandle) {
 }
 
 void* block_number_get(int block_index, inode_t *inode){
-    if (inode->i_size / BLOCK_SIZE <= block_index){
+    if ((double) inode->i_size / BLOCK_SIZE <= block_index) {
         if (block_index - (int) inode->i_size / BLOCK_SIZE > 1) return NULL; // diferença maior que 1
         int block = data_block_alloc();
         if (block_index < NUM_DIRECT_REF){
@@ -361,6 +361,7 @@ void* block_number_get(int block_index, inode_t *inode){
             //fs_data[inode->ref_block * BLOCK_SIZE + (block_index - NUM_DIRECT_REF)] = (char) block;
             int *refs = data_block_get(inode->ref_block);
             refs[block_index - NUM_DIRECT_REF] = block;
+            printf("%d foi pedido e ficou %d\n", block_index, block);
             return data_block_get(block);
         }
     }
