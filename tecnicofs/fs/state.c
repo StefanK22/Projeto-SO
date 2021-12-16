@@ -162,10 +162,6 @@ int inode_delete(int inumber) {
         if (data_block_free(inode_table[inumber].ref_block) == -1) 
             return -1;
     }
-
-    /* TODO: handle non-empty directories (either return error, or recursively
-     * delete children */
-
     return 0;
 }
 
@@ -361,7 +357,6 @@ void* block_number_get(int block_index, inode_t *inode){
             //fs_data[inode->ref_block * BLOCK_SIZE + (block_index - NUM_DIRECT_REF)] = (char) block;
             int *refs = data_block_get(inode->ref_block);
             refs[block_index - NUM_DIRECT_REF] = block;
-            printf("%d foi pedido e ficou %d\n", block_index, block);
             return data_block_get(block);
         }
     }
