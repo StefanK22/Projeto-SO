@@ -195,28 +195,46 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
 		return -1;
 	}
 
+	file->of_offset = 0;
 	/* Determine how many bytes to read */
 	size_t to_read = inode->i_size - file->of_offset;
 	if (to_read > len) {
 		to_read = len;
 	}
 
-	if (file->of_offset + to_read >= BLOCK_SIZE) {
+	/*if (file->of_offset + to_read >= BLOCK_SIZE) {
 		return -1;
-	}
+	}*/
 
-	if (to_read > 0) {
-		void *block = data_block_get(inode->i_data_block);
-		if (block == NULL) {
-			return -1;
+	size_t to_be_read = to_read;
+	int block_index = (int) file->of_offset / BLOCK_SIZE;
+	size_t block_offset = file->of_offset % BLOCK_SIZE + 1;
+	void *block = block_number_get(block_index, inode);
+	if (block == NULL)
+		return -1;
+	if (block_offset + to_be_read <= BLOCK_SIZE)
+		memcpy(buffer, block + block_offset - 1, to_be_read);
+	else{
+		memcpy(buffer, block + block_offset - 1, BLOCK_SIZE - block_offset);
+		size_t read = BLOCK_SIZE - block_offset;
+		to_be_read -= read;
+		for (int i = block_index + 1; to_be_read != 0; i++){
+			block = block_number_get(i, inode);
+			if (block == NULL)
+				return -1;
+			if (to_be_read < BLOCK_SIZE){
+				memcpy(buffer + read, block - 1, to_be_read);
+				to_be_read = 0;
+			}
+			else {
+				memcpy(buffer + read, block - 1, BLOCK_SIZE);
+				read += BLOCK_SIZE;
+				to_be_read -= BLOCK_SIZE;
+			}
+			
 		}
-
-		/* Perform the actual read */
-		memcpy(buffer, block + file->of_offset, to_read);
-		/* The offset associated with the file handle is
-		 * incremented accordingly */
-		file->of_offset += to_read;
 	}
+	file->of_offset += to_read;
 	return (ssize_t)to_read;
 }
 
