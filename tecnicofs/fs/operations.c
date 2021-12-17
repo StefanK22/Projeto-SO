@@ -112,10 +112,10 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
 		return -1;
 	}
 
-	/* Determine how many bytes to write 
+	/* Determine how many bytes to write */
 	if (to_write + file->of_offset > (BLOCK_SIZE * (NUM_DIRECT_REF + MAX_SUP_BLOCKS))) {
 		to_write = BLOCK_SIZE * (NUM_DIRECT_REF + MAX_SUP_BLOCKS) - file->of_offset;
-	} */
+	} 
 
 	if (to_write > 0) {
 		if (inode->i_size == 0) {
@@ -123,20 +123,27 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
 			inode->data_block_list[0] = data_block_alloc();
 		}
 
-		size_t to_be_written = to_write;
+		/* Stores the number of bytes that are going to be written */
+		size_t to_be_written = to_write; 
+
+		/* Stores the bytes already written */
+		size_t written = 0; 
+		
+		/* Writes from the first block */
 		if (file->of_offset == 0){
 			for (int i = 0; to_be_written != 0; i++){
 				void *block = block_number_get(i, inode);
 				if (block == NULL) {
 					return -1;
 				}
+				/* Finishes writing */
 				if (to_be_written < BLOCK_SIZE){
-					memcpy(block, buffer + BLOCK_SIZE * i, to_be_written);
+					memcpy(block, buffer + written, to_be_written);
 					to_be_written = 0;
 				}
-				/* Perform the actual write */
 				else {
-					memcpy(block, buffer + BLOCK_SIZE * i, BLOCK_SIZE);
+					memcpy(block, buffer + written, BLOCK_SIZE);
+					written += BLOCK_SIZE;
 					to_be_written -= BLOCK_SIZE;
 				}
 				inode->i_size = to_write - to_be_written;
@@ -144,28 +151,42 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
 
 		}
 		else {
-			int block_index = (int) file->of_offset / BLOCK_SIZE;
+			/* Determine the order of the current block in the file*/
+			int file_block_order = (int) file->of_offset / BLOCK_SIZE;
+
+			/* Determine the offset of the current block*/
 			size_t block_offset = file->of_offset % BLOCK_SIZE + 1;
-			void *block = block_number_get(block_index, inode);
+			void *block = block_number_get(file_block_order, inode);
+			if (block == NULL){
+				return -1;
+			}
+			
+			/* Bytes to write are smaller than a BLOCK SIZE */
 			if (block_offset + to_be_written <= BLOCK_SIZE){
 				memcpy(block + block_offset - 1, buffer, to_be_written);
 			}
-			else{
+			else {
+				/* Writes until the end of the current block of the file */
 				memcpy(block + block_offset - 1, buffer, BLOCK_SIZE - block_offset);
-				to_be_written -= BLOCK_SIZE - block_offset;
-				for (int i = block_index + 1, j = 0; to_be_written != 0; i++){
+				written = BLOCK_SIZE - block_offset;
+				to_be_written -= written;
+				
+				/* Writes from the block next to the current one of the file */ 
+				for (int i = file_block_order + 1; to_be_written != 0; i++){
 					block = block_number_get(i, inode);
-					if (block == NULL) {
+					if (block == NULL) 
 						return -1;
-					}
+
+					/* Finishes writing */
 					if (to_be_written < BLOCK_SIZE){
-						memcpy(block - 1, buffer + BLOCK_SIZE * j++ + BLOCK_SIZE - block_offset, to_be_written);
+						memcpy(block - 1, buffer + written, to_be_written);
 						inode->i_size += to_be_written;
 						to_be_written = 0;
 					}
-					/* Perform the actual write */
+					/* Keeps writing */
 					else {
-						memcpy(block - 1, buffer + j++ * BLOCK_SIZE + BLOCK_SIZE - block_offset, BLOCK_SIZE);
+						memcpy(block - 1, buffer + written, BLOCK_SIZE);
+						written += BLOCK_SIZE;
 						to_be_written -= BLOCK_SIZE;
 						inode->i_size += BLOCK_SIZE;
 					}
@@ -195,66 +216,90 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
 		return -1;
 	}
 
-	file->of_offset = 0;
 	/* Determine how many bytes to read */
-	size_t to_read = inode->i_size - file->of_offset;
+	size_t to_read = inode->i_size - file->of_offset + 1;
 	if (to_read > len) {
 		to_read = len;
 	}
-
-	/*if (file->of_offset + to_read >= BLOCK_SIZE) {
-		return -1;
-	}*/
-
+	
+	/* How many bytes to read */
 	size_t to_be_read = to_read;
-	int block_index = (int) file->of_offset / BLOCK_SIZE;
-	size_t block_offset = file->of_offset % BLOCK_SIZE + 1;
-	void *block = block_number_get(block_index, inode);
+
+	/* Determine the order of the current block in the file */
+	int file_block_order = (int) file->of_offset / BLOCK_SIZE;
+
+	/* Determine the offset of the current block */
+	size_t block_offset = file->of_offset % BLOCK_SIZE;
+	
+	void *block = block_number_get(file_block_order, inode);
 	if (block == NULL)
 		return -1;
-	if (block_offset + to_be_read <= BLOCK_SIZE)
-		memcpy(buffer, block + block_offset - 1, to_be_read);
-	else{
-		memcpy(buffer, block + block_offset - 1, BLOCK_SIZE - block_offset);
+
+	/* Bytes to read are smaller than the BLOCK_SIZE */
+	if (block_offset + to_be_read <= BLOCK_SIZE){
+		memcpy(buffer, block + block_offset, to_be_read);
+	}
+	
+	else {
+		memcpy(buffer, block + block_offset, BLOCK_SIZE - block_offset);
+		/* Amount of bytes that have been read */
 		size_t read = BLOCK_SIZE - block_offset;
 		to_be_read -= read;
-		for (int i = block_index + 1; to_be_read != 0; i++){
+		
+		/* Reads from the block next to the current one of the file */
+		for (int i = file_block_order + 1; to_be_read != 0; i++){
 			block = block_number_get(i, inode);
 			if (block == NULL)
 				return -1;
+				
+			/* Finishes reading */
 			if (to_be_read < BLOCK_SIZE){
-				memcpy(buffer + read, block - 1, to_be_read);
+				memcpy(buffer + read, block, to_be_read);
 				to_be_read = 0;
 			}
+			
+			/* Keeps reading */
 			else {
-				memcpy(buffer + read, block - 1, BLOCK_SIZE);
+				memcpy(buffer + read, block, BLOCK_SIZE);
 				read += BLOCK_SIZE;
 				to_be_read -= BLOCK_SIZE;
 			}
-			
 		}
 	}
+	/* Update the file offset */
 	file->of_offset += to_read;
 	return (ssize_t)to_read;
 }
 
 int tfs_copy_to_external_fs(char const *source_path, char const *dest_path){
 
-
 	char buffer[128];
+	
+	/* Bytes that have been read */
 	ssize_t bytes_read;
+
+	/* Opens the source file */
 	int fs = tfs_open(source_path, 0);
-	if (fs == -1) return -1;
+	if (fs == -1) 
+		return -1;
+
+	/* Opens the destination file */
 	FILE *fd = fopen(dest_path, "w");
-	if (fd == NULL) return -1;
+	if (fd == NULL)
+		return -1;
+	
+	/* Reads and copies the file */
 	do {
 		bytes_read = tfs_read(fs, buffer, sizeof(buffer));
-		if (bytes_read == -1){ 
-			// erro
-		}		
-		fwrite(buffer, 1, (size_t) bytes_read, fd);
+		if (bytes_read < 0)
+			return -1;
+
+		if (fwrite(buffer, 1, (size_t) bytes_read, fd) < 0)
+			return -1; 
+		
 	} while (bytes_read == 128);
 
+	/* Closes the two files */ 
 	if (tfs_close(fs) == -1 || fclose(fd) == -1) return -1;
 
 	return 0;

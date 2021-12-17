@@ -36,11 +36,32 @@ int main() {
     r = tfs_write(f, str5, strlen(str5));
     assert(r == strlen(str5));
 
+    assert(tfs_close(f) != -1);
+    f = tfs_open(path, 0);
+    assert(f != -1);
+
+
     //teste();
 
-    r = tfs_read(f, buffer, sizeof(buffer) - 1);
+
+    r = tfs_read(f, buffer, 256);
+    printf("%d\n", (int) strlen(buffer));
     printf("%s\n", buffer);
-    //assert(r == strlen(str));
+    r = tfs_read(f, buffer, 256);
+    printf("%d\n", (int) strlen(buffer));
+    printf("%s\n", buffer);
+    r = tfs_read(f, buffer, 256);
+    printf("%d\n", (int) strlen(buffer));
+    printf("%s\n", buffer);
+    r = tfs_read(f, buffer, 256);
+    printf("%d\n", (int) strlen(buffer));
+    printf("%s\n", buffer);
+    r = tfs_read(f, buffer, 256);
+    printf("%d\n", (int) strlen(buffer));
+    printf("%s\n", buffer);
+    r = tfs_read(f, buffer, 256);
+    printf("%d\n", (int) strlen(buffer));
+    printf("%s\n", buffer);
 
     assert(tfs_close(f) != -1);
 
