@@ -27,6 +27,7 @@ typedef struct {
     int i_data_block;
     int data_block_list[NUM_DIRECT_REF];
     int ref_block;
+    pthread_rwlock_t rwlock;
     /* in a real FS, more fields would exist here */
 } inode_t;
 
@@ -62,6 +63,6 @@ int add_to_open_file_table(int inumber, size_t offset);
 int remove_from_open_file_table(int fhandle);
 open_file_entry_t *get_open_file_entry(int fhandle);
 
-void* block_number_get(int block_index, inode_t *inode);
+void* block_order_get(int file_block_order, inode_t *inode);
 
 #endif // STATE_H

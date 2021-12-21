@@ -350,7 +350,7 @@ open_file_entry_t *get_open_file_entry(int fhandle) {
  * 	- Pointer to the inode that cointains the block
  * Returns: pointer to the first byte of the block, NULL otherwise
  */
-void* block_number_get(int file_block_order, inode_t *inode){
+void* block_order_get(int file_block_order, inode_t *inode){
 
 	/* Checks if the order of the block exists */
 	if ((double) inode->i_size / BLOCK_SIZE <= file_block_order) {

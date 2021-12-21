@@ -132,7 +132,7 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
 		/* Writes from the first block */
 		if (file->of_offset == 0){
 			for (int i = 0; to_be_written != 0; i++){
-				void *block = block_number_get(i, inode);
+				void *block = block_order_get(i, inode);
 				if (block == NULL) {
 					return -1;
 				}
@@ -156,7 +156,7 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
 
 			/* Determine the offset of the current block*/
 			size_t block_offset = file->of_offset % BLOCK_SIZE + 1;
-			void *block = block_number_get(file_block_order, inode);
+			void *block = block_order_get(file_block_order, inode);
 			if (block == NULL){
 				return -1;
 			}
@@ -173,7 +173,7 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
 				
 				/* Writes from the block next to the current one of the file */ 
 				for (int i = file_block_order + 1; to_be_written != 0; i++){
-					block = block_number_get(i, inode);
+					block = block_order_get(i, inode);
 					if (block == NULL) 
 						return -1;
 
@@ -231,7 +231,7 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
 	/* Determine the offset of the current block */
 	size_t block_offset = file->of_offset % BLOCK_SIZE;
 	
-	void *block = block_number_get(file_block_order, inode);
+	void *block = block_order_get(file_block_order, inode);
 	if (block == NULL)
 		return -1;
 
@@ -248,7 +248,7 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
 		
 		/* Reads from the block next to the current one of the file */
 		for (int i = file_block_order + 1; to_be_read != 0; i++){
-			block = block_number_get(i, inode);
+			block = block_order_get(i, inode);
 			if (block == NULL)
 				return -1;
 				
