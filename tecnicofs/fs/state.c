@@ -5,17 +5,21 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <pthread.h>
 
 /* Persistent FS state  (in reality, it should be maintained in secondary
  * memory; for simplicity, this project maintains it in primary memory) */
 
 /* I-node table */
 static inode_t inode_table[INODE_TABLE_SIZE];
+
 static char freeinode_ts[INODE_TABLE_SIZE];
+pthread_mutex_t freeinode_lock = PTHREAD_MUTEX_INITIALIZER;
 
 /* Data blocks */
 static char fs_data[BLOCK_SIZE * DATA_BLOCKS];
 static char free_blocks[DATA_BLOCKS];
+pthread_mutex_t freeblocks_lock = PTHREAD_MUTEX_INITIALIZER;
 
 /* Volatile FS state */
 
@@ -95,6 +99,7 @@ int inode_create(inode_type n_type) {
 		}
 
 		/* Finds first free entry in i-node table */
+		pthread_mutex_lock(&freeinode_trinco);
 		if (freeinode_ts[inumber] == FREE) {
 			/* Found a free entry, so takes it for the new i-node*/
 			freeinode_ts[inumber] = TAKEN;
