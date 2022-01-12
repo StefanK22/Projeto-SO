@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <pthread.h>
 
 /*
  * Directory entry
@@ -27,7 +28,7 @@ typedef struct {
     int i_data_block;
     int data_block_list[NUM_DIRECT_REF];
     int ref_block;
-    pthread_rwlock_t rwlock;
+    pthread_mutex_t i_lock;
     /* in a real FS, more fields would exist here */
 } inode_t;
 
@@ -39,6 +40,7 @@ typedef enum { FREE = 0, TAKEN = 1 } allocation_state_t;
 typedef struct {
     int of_inumber;
     size_t of_offset;
+    pthread_mutex_t of_lock;
 } open_file_entry_t;
 
 #define MAX_DIR_ENTRIES (BLOCK_SIZE / sizeof(dir_entry_t))
@@ -64,5 +66,7 @@ int remove_from_open_file_table(int fhandle);
 open_file_entry_t *get_open_file_entry(int fhandle);
 
 void* block_order_get(int file_block_order, inode_t *inode);
+
+void teste();
 
 #endif // STATE_H
