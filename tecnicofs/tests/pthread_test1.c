@@ -39,7 +39,6 @@ int main(){
 
 	pthread_t tid[2];
 
-
 	pthread_create(&tid[0], NULL, thr_func_a, (void*)&f);
 	pthread_create(&tid[1], NULL, thr_func_b, (void*)&f);
 
@@ -48,9 +47,10 @@ int main(){
 
 	char buffer[31];
 
-	tfs_read(f, buffer, strlen(buffer));
+	tfs_close(f);
+	f = tfs_open(path, 0);
 
-	printf("%d\n", (int)strlen(buffer));
+	tfs_read(f, buffer, sizeof(buffer));
 
 	printf("%s\n", buffer);
 

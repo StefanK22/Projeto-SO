@@ -271,8 +271,8 @@ int find_in_dir(int inumber, char const *sub_name) {
 	/* Locates the block containing the directory's entries */
 	dir_entry_t *dir_entry =
 		(dir_entry_t *)data_block_get(inode_table[inumber].i_data_block);
-	pthread_mutex_unlock(&inode_table[inumber].i_lock);
 	if (dir_entry == NULL) {
+		pthread_mutex_unlock(&inode_table[inumber].i_lock);
 		return -1;
 	}
 
@@ -281,9 +281,10 @@ int find_in_dir(int inumber, char const *sub_name) {
 	for (int i = 0; i < MAX_DIR_ENTRIES; i++)
 		if ((dir_entry[i].d_inumber != -1) &&
 			(strncmp(dir_entry[i].d_name, sub_name, MAX_FILE_NAME) == 0)) {
+			pthread_mutex_unlock(&inode_table[inumber].i_lock);
 			return dir_entry[i].d_inumber;
 		}
-
+	pthread_mutex_unlock(&inode_table[inumber].i_lock);
 	return -1;
 }
 

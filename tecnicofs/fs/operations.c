@@ -50,10 +50,10 @@ int tfs_open(char const *name, int flags) {
 	if (inum >= 0) {
 		/* The file already exists */
 		inode_t *inode = inode_get(inum);
+		pthread_mutex_lock(&inode->i_lock);	
 		if (inode == NULL) {
 			return -1;
 		}
-		pthread_mutex_lock(&inode->i_lock);
 		/* Trucate (if requested) */
 		if (flags & TFS_O_TRUNC) {
 			if (inode->i_size > 0) {
