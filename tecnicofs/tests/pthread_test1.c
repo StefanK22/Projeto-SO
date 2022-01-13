@@ -31,8 +31,6 @@ void* thr_func_b(void* arg){
 
 int main(){
 
-
-
 	assert(tfs_init() != -1);
 	char *path = "/f1";
 	int f = tfs_open(path, TFS_O_CREAT);
@@ -45,16 +43,28 @@ int main(){
 	pthread_join(tid[0], NULL);
 	pthread_join(tid[1], NULL);
 
-	char buffer[31];
+	char buffer[21];
 
 	tfs_close(f);
 	f = tfs_open(path, 0);
 
 	tfs_read(f, buffer, sizeof(buffer));
 
-	printf("%s\n", buffer);
+	char str_a[11];
+	char str_b[11];
+	memset(str_a, 'a', 10);
+	memset(str_b, 'b', 10);
+
+	char str_aux1[21];
+	char str_aux2[21];
+	strcpy(str_aux1, str_a);
+	strcat(str_aux1, str_b);
+	strcpy(str_aux2, str_b);
+	strcat(str_aux2, str_a);
+	assert(strcmp(buffer, str_aux1) == 0 || strcmp(buffer, str_aux2) == 0);
 
     assert(tfs_close(f) != -1);
 	
+    printf("Successful test.\n");
 	return 0;
 }
