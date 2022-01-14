@@ -28,7 +28,7 @@ typedef struct {
     int i_data_block;
     int data_block_list[NUM_DIRECT_REF];
     int ref_block;
-    pthread_mutex_t i_lock;
+    pthread_rwlock_t i_lock;
     /* in a real FS, more fields would exist here */
 } inode_t;
 
@@ -67,6 +67,5 @@ open_file_entry_t *get_open_file_entry(int fhandle);
 
 void* block_order_get(int file_block_order, inode_t *inode);
 
-void teste();
 
 #endif // STATE_H
