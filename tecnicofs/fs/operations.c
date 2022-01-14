@@ -45,7 +45,6 @@ int tfs_open(char const *name, int flags) {
 	if (!valid_pathname(name)) {
 		return -1;
 	}
-	// FALTA PROTEGER
 	inum = tfs_lookup(name);
 	if (inum >= 0) {
 		/* The file already exists */
@@ -183,7 +182,6 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
 				for (int i = file_block_order + 1; to_be_written != 0; i++){
 					block = block_order_get(i, inode);
 					if (block == NULL){
-						// FALTA
 						if(pthread_mutex_unlock(&file->of_lock) != 0) return -1;
 						pthread_rwlock_unlock(&inode->i_lock);
 						return -1;
