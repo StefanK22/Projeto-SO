@@ -6,30 +6,51 @@
 #include <unistd.h>
 #include <pthread.h>
 
-void* thr_func(){
+/*
+ * This tests creates 3 threads that open a new file, then
+ * checks if each file handle is different from the other.
+ */
 
+/* Global variables that store each file handle. */
+int a, b, c;
+
+void* thr_func_a(){
 	char *path = "/f1";
-	int a = tfs_open(path, TFS_O_CREAT);
-	int *f;
-	f = &a;
+	int f = tfs_open(path, TFS_O_CREAT);
+	a = f;
+	return NULL;
+}
 
-	return (void*)f;
+void* thr_func_b(){
+	char *path = "/f1";
+	int f = tfs_open(path, TFS_O_CREAT);
+	b = f;
+	return NULL;
+}
+
+void* thr_func_c(){
+	char *path = "/f1";
+	int f = tfs_open(path, TFS_O_CREAT);
+	c = f;
+	return NULL;
 }
 
 int main(){
 
+	pthread_t tid[3];
+
 	assert(tfs_init() != -1);
 
-	pthread_t tid[2];
+	assert(pthread_create(&tid[0], NULL, thr_func_a, NULL) == 0);
+	assert(pthread_create(&tid[1], NULL, thr_func_b, NULL) == 0);
+	assert(pthread_create(&tid[2], NULL, thr_func_c, NULL) == 0);
 
-	pthread_create(&tid[0], NULL, thr_func, NULL);
-	pthread_create(&tid[1], NULL, thr_func, NULL);
+	assert(pthread_join(tid[0], NULL) == 0);
+	assert(pthread_join(tid[1], NULL) == 0);
+	assert(pthread_join(tid[2], NULL) == 0);
 
-	int a, b;
-	pthread_join(tid[0],(void*) &a);
-	pthread_join(tid[1],(void*) &b);
-
-	assert(a != b);
+	/* Compares the 3 file handles */
+	assert(a != b && a != c && b != c);
     printf("Successful test.\n");
 	return 0;
 }
