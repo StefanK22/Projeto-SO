@@ -11,8 +11,8 @@
 
 /* 
  * This test creates two threads that write 10 characters in a cicle.
- * Then copies to a external file the writen characters.
-*/
+ * Then checks if all the characters were written.
+ */
 
 void* thr_func_a(void* arg){
 
@@ -37,7 +37,6 @@ void* thr_func_b(void* arg){
 int main(){
 
 	char *path = "/f1";
-	char *path2 = "external_file.txt";
 	pthread_t tid[2];
 
 	assert(tfs_init() != -1);
@@ -53,26 +52,12 @@ int main(){
 	f = tfs_open(path, 0);
 	assert(f != -1);
 
-	char buffer[SIZE], str_aux1[SIZE], str_aux2[SIZE];
+	char buffer[SIZE];
 	assert(tfs_read(f, buffer, SIZE) == SIZE);
-
-	/* Creates two strings that represent the expected reading. */
-	memset(str_aux1, 'a', COUNT);
-	memset(str_aux1 + COUNT, 'b', COUNT);
-	memset(str_aux2, 'b', COUNT);
-	memset(str_aux2 + COUNT, 'a', COUNT);
-
-	assert(strcmp(buffer, str_aux1) == 0 || strcmp(buffer, str_aux2) == 0);
 
     assert(tfs_close(f) != -1);
 	
-	/* Copies to external file. */
-	assert(tfs_copy_to_external_fs(path, path2) != -1);
-	FILE *fp = fopen(path2, "r");
-	assert(fp != NULL);
-	assert(fread(buffer, 1, sizeof(buffer), fp) == sizeof(buffer));
-	assert(strcmp(buffer, str_aux1) == 0 || strcmp(buffer, str_aux2) == 0);
-	assert(fclose(fp) != -1);
+
 	
     printf("Successful test.\n");
 	return 0;

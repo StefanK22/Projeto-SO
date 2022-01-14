@@ -67,5 +67,4 @@ open_file_entry_t *get_open_file_entry(int fhandle);
 
 void* block_order_get(int file_block_order, inode_t *inode);
 
-
 #endif // STATE_H

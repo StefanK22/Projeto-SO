@@ -111,11 +111,11 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
 	/* From the open file table entry, we get the inode */
 	if(pthread_mutex_lock(&file->of_lock) != 0) return -1;
 	inode_t *inode = inode_get(file->of_inumber);
-	if(pthread_rwlock_wrlock(&inode->i_lock) != 0) return -1;
 	if (inode == NULL) {
 		pthread_mutex_unlock(&file->of_lock);
 		return -1;
 	}
+	if(pthread_rwlock_wrlock(&inode->i_lock) != 0) return -1;
 
 	/* Determine how many bytes to write */
 	if (to_write + file->of_offset > (BLOCK_SIZE * (NUM_DIRECT_REF + MAX_SUP_BLOCKS))) {
@@ -320,7 +320,7 @@ int tfs_copy_to_external_fs(char const *source_path, char const *dest_path){
 		if (bytes_read < 0)
 			return -1;
 
-		if (fwrite(buffer, 1, (size_t) bytes_read, fd) < 0)
+		if ((int) fwrite(buffer, 1, (size_t) bytes_read, fd) < 0)
 			return -1; 
 		
 	} while (bytes_read == 128);

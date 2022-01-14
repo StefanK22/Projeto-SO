@@ -154,7 +154,6 @@ int inode_create(inode_type n_type) {
 			if(pthread_mutex_unlock(&freeinode_lock) != 0) return -1;
 			return inumber;
 		}
-		if(pthread_rwlock_unlock(&inode_table[inumber].i_lock) != 0) return -1;
 		if(pthread_mutex_unlock(&freeinode_lock) != 0) return -1;
 	}
 	return -1;
@@ -181,7 +180,7 @@ int inode_delete(int inumber) {
 	freeinode_ts[inumber] = FREE;
 	if(pthread_mutex_unlock(&freeinode_lock) != 0) return -1;
 
-	if(pthread_rwlock_rdlock(&inode_table[inumber].i_lock) != 0) return -1;
+	if(pthread_rwlock_wrlock(&inode_table[inumber].i_lock) != 0) return -1;
 	if (inode_table[inumber].i_size > 0) {
 		for(size_t i = 0; i < NUM_DIRECT_REF; i++){
 			if (data_block_free(inode_table[inumber].data_block_list[i]) == -1) {
@@ -379,6 +378,7 @@ int remove_from_open_file_table(int fhandle) {
 	if(pthread_mutex_lock(&free_open_file_lock) != 0) return -1;
 	if (!valid_file_handle(fhandle) ||
 		free_open_file_entries[fhandle] != TAKEN) {
+		pthread_mutex_unlock(&free_open_file_lock);
 		return -1;
 	}
 	free_open_file_entries[fhandle] = FREE;

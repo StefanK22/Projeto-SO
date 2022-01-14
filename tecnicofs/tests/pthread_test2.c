@@ -17,6 +17,7 @@ int a, b, c;
 void* thr_func_a(){
 	char *path = "/f1";
 	int f = tfs_open(path, TFS_O_CREAT);
+	assert(f != -1);
 	a = f;
 	return NULL;
 }
@@ -24,6 +25,7 @@ void* thr_func_a(){
 void* thr_func_b(){
 	char *path = "/f1";
 	int f = tfs_open(path, TFS_O_CREAT);
+	assert(f != -1);
 	b = f;
 	return NULL;
 }
@@ -31,6 +33,7 @@ void* thr_func_b(){
 void* thr_func_c(){
 	char *path = "/f1";
 	int f = tfs_open(path, TFS_O_CREAT);
+	assert(f != -1);
 	c = f;
 	return NULL;
 }
