@@ -45,7 +45,7 @@ int tfs_open(char const *name, int flags) {
 	if (!valid_pathname(name)) {
 		return -1;
 	}
-
+	// FALTA PROTEGER
 	inum = tfs_lookup(name);
 	if (inum >= 0) {
 		/* The file already exists */
@@ -163,6 +163,7 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
 			size_t block_offset = file->of_offset % BLOCK_SIZE + 1;
 			void *block = block_order_get(file_block_order, inode);
 			if (block == NULL){
+				//FALTA
 				pthread_mutex_unlock(&file->of_lock);
 				return -1;
 			}
@@ -181,6 +182,7 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
 				for (int i = file_block_order + 1; to_be_written != 0; i++){
 					block = block_order_get(i, inode);
 					if (block == NULL){
+						// FALTA
 						pthread_mutex_unlock(&file->of_lock);
 						return -1;
 					}
@@ -297,7 +299,7 @@ int tfs_copy_to_external_fs(char const *source_path, char const *dest_path){
 	ssize_t bytes_read;
 
 	/* Opens the source file */
-	int fs = tfs_open(source_path, 0);
+	int fs = tfs_open(source_path, TFS_O_CREAT);
 	if (fs == -1) 
 		return -1;
 
